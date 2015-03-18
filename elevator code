@@ -1,0 +1,376 @@
+//setting stepper Motor to pin 13 to 10 
+#define c1 13    
+#define c2 12   
+#define c3 11    
+#define c4 10  
+//setting leds that will locate the floor
+#define led1 6    //led1
+#define led2 5
+#define led3 4
+
+/*
+Here i use locations as a variable to determine point to point location of the elavator
+path of travel; essnetially it will be reading for these variables to situate itself.
+*/
+int location1 = 0; 
+int location2 = 0;
+
+#define pir1 9
+#define pir2 8
+#define pir3 7
+int pirstate = LOW;
+int signal1 = 0;
+int signal2 = 0;
+
+
+void setup()
+{  
+Serial.begin(9600);
+//set the coil control pins as outputs
+  pinMode(c1, OUTPUT); pinMode(c2, OUTPUT); pinMode(c3, OUTPUT); pinMode(c4, OUTPUT);
+
+//setting up the led pin type
+  pinMode(led1,OUTPUT); pinMode(led2,OUTPUT); pinMode(led3,OUTPUT);
+
+//setting up the pir pin type 
+  pinMode(pir1,INPUT); pinMode(pir2,INPUT); pinMode(pir3,INPUT); 
+
+//elevator always initializes on the first floor
+  digitalWrite(led1,HIGH);
+}
+void loop()
+{ 
+//=====SITUATION FOR 1ST FLOOR ONE AT A TIME===========
+
+ //elevator coming from 1st to go to 2nd
+  signal1 = digitalRead(pir2);//checking 
+  location1 = digitalRead(led1);
+  location2 = digitalRead(led2);
+  if ((signal1 == HIGH)&&(location1 == HIGH))
+  { 
+     digitalWrite(led2,HIGH);
+     Serial.println("GOING UP!!");
+     digitalWrite(led1,LOW);
+     CW1();
+    
+  }
+  else if ((location2 == HIGH)&&(signal1 == HIGH))
+  {
+   norotation();
+  }
+  Serial.println("You have reached the 2nd FLOOR");  
+  
+//elevator coming from 1st to go to 3rd
+  signal1 = digitalRead(pir3);
+  location1 = digitalRead(led1);
+  location2 = digitalRead(led3);
+  if ((signal1 == HIGH)&&(location1 == HIGH))
+  { 
+     digitalWrite(led3,HIGH);
+     Serial.print("GOING UP!!");
+     digitalWrite(led1,LOW);
+     CW2();
+     
+  }
+  //if the elevator is on the 1st floor stay there
+  else if ((location2 == HIGH)&&(signal1 == HIGH))
+  {
+   norotation();
+  }
+Serial.println("You have reached the 3rd FLOOR");
+
+//=========SITUATION FOR 2ND FLOOR ONE AT A TIME=======
+
+  //elevator coming from 2nd to go to 1st
+  signal1 = digitalRead(pir1);//checking for PIR state
+  location1 = digitalRead(led2);//checking for location
+  location2 = digitalRead(led1);
+  if ((signal1 == HIGH)&&(location1 == HIGH))
+  { 
+     digitalWrite(led1,HIGH);
+     Serial.println("GOING DOWN!!");
+     digitalWrite(led2,LOW);
+     CCW1();
+     
+  }
+  else if ((location2 == HIGH)&&(signal1 == HIGH))
+  {
+   norotation();
+  }
+  Serial.print("You have reach the 1st FLOOR");
+  
+  //elevator coming from 2nd to go to 3rd
+  signal1 = digitalRead(pir3);
+  location1 = digitalRead(led2);
+  location2 = digitalRead(led3);
+  if ((signal1 == HIGH)&&(location1 == HIGH))
+  { 
+     digitalWrite(led3,HIGH);
+     Serial.print("GOING UP!!");
+     digitalWrite(led2,LOW);
+     CW3();
+     
+  }
+  //if the elevator is already on the second floor stay there
+  else if ((location2 == HIGH)&&(signal1 == HIGH))
+  {
+   norotation();
+  }
+  Serial.print('You have reached the 3rd FLOOR');
+  
+//=======SITTUATION FOR 3RD FLOOR ONE AT A TIME======
+
+  //elevator coming from 3rd to go to 1st
+  signal1 = digitalRead(pir1);
+  location1 = digitalRead(led3);
+  location2 = digitalRead(led1);
+  if ((signal1 == HIGH)&&(location1 == HIGH))
+  { 
+     digitalWrite(led1,HIGH);
+     Serial.print('GOING DOWN!!');
+     digitalWrite(led3,LOW);
+     CCW2();
+     
+  }
+  else if ((location2 == HIGH)&&(signal1 == HIGH))
+  {
+   norotation();
+  }
+  Serial.print('You have reached the 1st FLOOR');
+  
+ //elevator coming from 3rd to go to 2nd
+ signal1 = digitalRead(pir2);
+  location1 = digitalRead(led3);
+  location2 = digitalRead(led2);
+  if ((signal1 == HIGH)&&(location1 == HIGH))
+  { 
+     digitalWrite(led2,HIGH);
+     Serial.print('GOING DOWN!!');
+     digitalWrite(led3,LOW);
+     CCW3();
+     
+  }
+  else if ((location2 == HIGH)&&(signal1 == HIGH))
+  {
+   norotation();
+  }
+  Serial.print('You have reached the 2nd FLOOR');
+}
+
+
+///////////////////////////////////////////////////////////////////////
+////////////////FUNCTIONS FOR STEPPER MOTOR ROTATION//////////////////
+/////////////////////////////////////////////////////////////////////
+//short clockwise direction
+void CW1()
+{
+    for ( int i = 0; i <= 700; i++)
+    {
+      digitalWrite(c1, HIGH);
+      digitalWrite(c2, LOW);
+      digitalWrite(c3, LOW);
+      digitalWrite(c4, LOW);  //coil 4 on
+      delay (5);
+      
+      digitalWrite(c1, LOW);
+      digitalWrite(c2, HIGH);
+      digitalWrite(c3, LOW);
+      digitalWrite(c4, LOW);  //coil 4 on
+      delay (5);
+      
+      digitalWrite(c1, LOW);
+      digitalWrite(c2, LOW);
+      digitalWrite(c3, HIGH);
+      digitalWrite(c4, LOW);  //coil 4 on
+      delay (5);
+      
+      digitalWrite(c1, LOW);
+      digitalWrite(c2, LOW);
+      digitalWrite(c3, LOW);
+      digitalWrite(c4, HIGH);  //coil 4 on
+      delay (5);   
+    }
+}
+//short counter clockwise direction
+void CCW1()
+{
+    for (int b = 0; b <= 700; b++)
+    { 
+      digitalWrite(c1, LOW);  
+      digitalWrite(c2, LOW);
+      digitalWrite(c3, LOW);
+      digitalWrite(c4, HIGH);  //coil 4 ON
+      delay (5);
+
+      digitalWrite(c1, LOW); 
+      digitalWrite(c2, LOW);
+      digitalWrite(c3, HIGH); //coil 3 ON
+      digitalWrite(c4, LOW);  
+      delay (5);
+
+      digitalWrite(c1, LOW);
+      digitalWrite(c2, HIGH); //coil 2 ON
+      digitalWrite(c3, LOW);
+      digitalWrite(c4, LOW);  
+      delay (5);
+
+      digitalWrite(c1, HIGH); //coil 1 ON
+      digitalWrite(c2, LOW);
+      digitalWrite(c3, LOW);
+      digitalWrite(c4, LOW);   
+      delay (5);       
+    }
+
+  }
+//Long Clockwise direction
+void CW2()
+{
+    for ( int i = 0; i <= 1200; i++)
+    {
+      digitalWrite(c1, HIGH); //coil 1 ON
+      digitalWrite(c2, LOW);
+      digitalWrite(c3, LOW);
+      digitalWrite(c4, LOW);  
+      delay (5);
+      
+      digitalWrite(c1, LOW);
+      digitalWrite(c2, HIGH); //coil 2 ON
+      digitalWrite(c3, LOW);
+      digitalWrite(c4, LOW);  
+      delay (5);
+      
+      digitalWrite(c1, LOW);
+      digitalWrite(c2, LOW);
+      digitalWrite(c3, HIGH); //coil 3 ON
+      digitalWrite(c4, LOW);  
+      delay (5);
+      
+      digitalWrite(c1, LOW);
+      digitalWrite(c2, LOW);
+      digitalWrite(c3, LOW);
+      digitalWrite(c4, HIGH);  //coil 4 ON
+      delay (5);   
+    }
+}
+
+//long counter clockwise direction
+void CCW2()
+{
+    for (int b = 0; b <= 1200; b++)
+    { 
+      digitalWrite(c1, LOW);  
+      digitalWrite(c2, LOW);
+      digitalWrite(c3, LOW);
+      digitalWrite(c4, HIGH);  //coil 4 ON
+      delay (5);
+
+      digitalWrite(c1, LOW); 
+      digitalWrite(c2, LOW);
+      digitalWrite(c3, HIGH); //coil 3 ON
+      digitalWrite(c4, LOW);  
+      delay (5);
+
+      digitalWrite(c1, LOW);
+      digitalWrite(c2, HIGH); //coil 2 ON
+      digitalWrite(c3, LOW);
+      digitalWrite(c4, LOW);  
+      delay (5);
+
+      digitalWrite(c1, HIGH); //coil 1 ON
+      digitalWrite(c2, LOW);
+      digitalWrite(c3, LOW);
+      digitalWrite(c4, LOW);  
+      delay (5);       
+    }
+}
+void CW3()
+{
+    for ( int i = 0; i <= 750; i++)
+    {
+      digitalWrite(c1, HIGH); //coil 1 ON
+      digitalWrite(c2, LOW);
+      digitalWrite(c3, LOW);
+      digitalWrite(c4, LOW);  
+      delay (5);
+      
+      digitalWrite(c1, LOW);
+      digitalWrite(c2, HIGH); //coil 2 ON
+      digitalWrite(c3, LOW);
+      digitalWrite(c4, LOW);  
+      delay (5);
+      
+      digitalWrite(c1, LOW);
+      digitalWrite(c2, LOW);
+      digitalWrite(c3, HIGH); //coil 3 ON
+      digitalWrite(c4, LOW);  
+      delay (5);
+      
+      digitalWrite(c1, LOW);
+      digitalWrite(c2, LOW);
+      digitalWrite(c3, LOW);
+      digitalWrite(c4, HIGH);  //coil 4 ON
+      delay (5);   
+    }
+}
+void CCW3()
+{
+    for (int b = 0; b <= 750; b++)
+    { 
+      digitalWrite(c1, LOW);  
+      digitalWrite(c2, LOW);
+      digitalWrite(c3, LOW);
+      digitalWrite(c4, HIGH);  //coil 4 ON
+      delay (5);
+
+      digitalWrite(c1, LOW); 
+      digitalWrite(c2, LOW);
+      digitalWrite(c3, HIGH); //coil 3 ON
+      digitalWrite(c4, LOW);  
+      delay (5);
+
+      digitalWrite(c1, LOW);
+      digitalWrite(c2, HIGH); //coil 2 ON
+      digitalWrite(c3, LOW);
+      digitalWrite(c4, LOW);  
+      delay (5);
+
+      digitalWrite(c1, HIGH); //coil 1 on
+      digitalWrite(c2, LOW);
+      digitalWrite(c3, LOW);
+      digitalWrite(c4, LOW);   
+      delay (5);       
+    }
+}
+void norotation()
+{
+  // ALL COILS ARE OFF
+    for (int i = 0; i <= 100; i++)
+    {
+      digitalWrite(c1, LOW);
+      digitalWrite(c2, LOW);
+      digitalWrite(c3, LOW);
+      digitalWrite(c4, LOW);  
+      delay (5);
+      
+      digitalWrite(c1, LOW);
+      digitalWrite(c2, LOW);
+      digitalWrite(c3, LOW);
+      digitalWrite(c4, LOW);  
+      delay (5);
+      
+      digitalWrite(c1, LOW);
+      digitalWrite(c2, LOW);
+      digitalWrite(c3, LOW);
+      digitalWrite(c4, LOW);  
+      delay (5);
+      
+      digitalWrite(c1, LOW);
+      digitalWrite(c2, LOW);
+      digitalWrite(c3, LOW);
+      digitalWrite(c4, LOW); 
+      delay (5);
+  }
+
+}
+
+
